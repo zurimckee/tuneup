@@ -15,6 +15,7 @@ made a music streaming app because i my ipod broke and i was so tired of dealing
 - track shuffle (actually shuffles, spotify ur dust) 
 - 'up next' queue showing 5 songs playing next
 - download button to save tracks to local cache for offline playback
+- app shell cached as well so that the ui loads offline
 - i drew the icon 😎
 
   
