@@ -92,6 +92,7 @@ def index():
 def service_worker():
     response = send_from_directory("static", "sw.js", mimetype="application/javascript")
     response.headers["Service-Worker-Allowed"] = "/"
+    response.headers["Cache-Control"] = "no-cache"
     return response
 
 @app.route("/art/<int:track_id>")
