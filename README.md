@@ -13,7 +13,7 @@ made a music streaming app because i my ipod broke and i was so tired of dealing
 - state persistance, allows for track resume at relevant duration point on reload
 - sidebar with track catalog corresponding to r2 folders
 - track shuffle (actually shuffles, spotify ur dust) 
-- 'up next' queue showing 5 songs playing next
+- 'up next' queue showing 5 songs playing next with addition/deletion
 - service workers to cache tracks for offline playback
 - app shell cached as well so that the ui loads offline
 - i drew the icon 😎
