@@ -8,7 +8,7 @@ made a music streaming app because i my ipod broke and i was so tired of dealing
 ### features
 - pwa with mobile first design
 - media sessions api = shows nowplaying song on lock screen
-- streams mp3 audio from track in bucket
+- streams mp3 audio from track in cloudflare bucket
 - search function allowing for fuzzy search and keyword
 - state persistance, allows for track resume at relevant duration point on reload
 - sidebar with track catalog corresponding to r2 folders
@@ -24,7 +24,4 @@ backend -> flask
 frontend -> html/css/js
 storage -> cloudflare r2 and sqlite for indexing
 deployment env -> railway
-
-
-
 
