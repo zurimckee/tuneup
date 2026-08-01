@@ -157,11 +157,10 @@ body {
 
 .sidebar-item {
   display: flex;
-  flex-direction: column;
   padding: 10px 16px;
   cursor: pointer;
   border-bottom: 1px solid #778DA9;
-  padding-left: 28px; 
+  padding-left: 20px; 
 }
 
 .sidebar-item:hover {
@@ -499,4 +498,55 @@ i.fa-step-backward {
   font-size: 0.85rem;
   color: #888;
   font-style: italic;
+}
+
+.result-item,
+.sidebar-item {
+  flex-direction: row;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.add-queue-btn {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  color: #555;
+  flex-shrink: 0;
+}
+
+.add-queue-btn:hover {
+  background-color: #778DA9;
+  border-color: #f5f5f0;
+  color: #f5f5f0;
+}
+
+.queue-item.queued {
+  background-color: #f5f5f0;
+  border-left: 3px solid #778DA9;
+  padding-left: 8px;
+}
+
+.queue-item-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.queue-remove-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #999;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.queue-remove-btn:hover {
+  color: #c0392b;
 }

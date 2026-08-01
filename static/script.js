@@ -35,6 +35,7 @@ let curr_track = document.createElement('audio')
 let track_list = [];
 let full_library = [];
 let library_tracks = [];
+let manual_queue = [];
 
 const STORAGE_KEY = "tuneup_state";
 
@@ -141,16 +142,23 @@ async function renderSidebar() {
         folderTracks.forEach(track => {
             const li = document.createElement("li");
             li.className = "sidebar-item";
-            li.innerHTML = `<span class="sidebar-title">${track.title}</span><span class="sidebar-artist">${track.artist}</span>`;
+            li.innerHTML = `
+                <span class="sidebar-info">
+                    <span class="sidebar-title">${track.title}</span>
+                    <span class="sidebar-artist">${track.artist}</span>
+                </span>
+                <button class="add-queue-btn" title="add to queue">+</button>
+            `;
             li.onclick = () => {
                 track_list = library_tracks;
                 track_index = track.originalIndex;
                 loadTrack(track_index);
                 playTrack();
             };
+            li.querySelector(".add-queue-btn").onclick = (e) => addToQueue(track, e);
             innerWrapper.appendChild(li);
         });
-
+        
         folderGroup.appendChild(innerWrapper);
 
         folderHeader.onclick = () => {
@@ -184,8 +192,14 @@ async function searchLibrary(query) {
         results.forEach((track, i) => {
             const li = document.createElement("li");
             li.className = "result-item";
-            li.innerHTML = `<span class="result-title">${track.title}</span> — <span class="result-artist">${track.artist}</span>`;
+            li.innerHTML = `
+                <span class="result-info">
+                    <span class="result-title">${track.title}</span> — <span class="result-artist">${track.artist}</span>
+                </span>
+                <button class="add-queue-btn" title="add to queue">+</button>
+            `;
             li.onclick = () => playFromResults(results, i);
+            li.querySelector(".add-queue-btn").onclick = (e) => addToQueue(track, e);
             results_list.appendChild(li);
         });
     }
@@ -314,6 +328,12 @@ function buildShuffleOrder() {
 }
 
 function nextTrack() {
+    if (manual_queue.length > 0) {
+        const queuedTrack = manual_queue.shift();
+        loadQueuedTrack(queuedTrack);
+        playTrack();
+        return;
+    }
     if (isShuffled) {
         shuffle_position++;
         if (shuffle_position >= shuffle_order.length) {
@@ -521,32 +541,78 @@ function getUpcomingTracks(count) {
 }
 
 function renderQueue() {
-    if (!track_list || track_list.length <= 1) {
+    queue_list_inner.innerHTML = "";
+
+    if (manual_queue.length === 0 && (!track_list || track_list.length <= 1)) {
         queue_list_inner.innerHTML = '<li class="queue-empty">no upcoming tracks</li>';
         return;
     }
 
-    const upcoming = getUpcomingTracks(5);
-    queue_list_inner.innerHTML = "";
-
-    upcoming.forEach(({ track, index }) => {
-        if (!track) return;
+    manual_queue.forEach((track, i) => {
         const li = document.createElement("li");
-        li.className = "queue-item";
-        li.innerHTML = `<span class="queue-item-title">${track.title}</span><span class="queue-item-artist">${track.artist}</span>`;
-        li.onclick = () => {
-            if (isShuffled) {
-                shuffle_position = shuffle_order.indexOf(index);
-            }
-            track_index = index;
-            loadTrack(track_index);
-            playTrack();
-        };
+        li.className = "queue-item queued";
+        li.innerHTML = `
+            <span class="queue-item-info">
+                <span class="queue-item-title">${track.title}</span>
+                <span class="queue-item-artist">${track.artist}</span>
+            </span>
+            <button class="queue-remove-btn" title="remove from queue">&times;</button>
+        `;
+        li.querySelector(".queue-remove-btn").onclick = (e) => removeFromQueue(i, e);
         queue_list_inner.appendChild(li);
     });
+
+    const remainingSlots = 5 - manual_queue.length;
+    if (remainingSlots > 0 && track_list && track_list.length > 1) {
+        getUpcomingTracks(remainingSlots).forEach(({ track, index }) => {
+            if (!track) return;
+            const li = document.createElement("li");
+            li.className = "queue-item";
+            li.innerHTML = `<span class="queue-item-title">${track.title}</span><span class="queue-item-artist">${track.artist}</span>`;
+            li.onclick = () => {
+                if (isShuffled) shuffle_position = shuffle_order.indexOf(index);
+                track_index = index;
+                loadTrack(track_index);
+                playTrack();
+            };
+            queue_list_inner.appendChild(li);
+        });
+    }
+}
+function addToQueue(track, event) {
+    if (event) event.stopPropagation(); // don't trigger the row's own onclick (which plays immediately)
+    manual_queue.push(track);
+    renderQueue();
 }
 
+function removeFromQueue(index, event) {
+    if (event) event.stopPropagation();
+    manual_queue.splice(index, 1);
+    renderQueue();
+}
 
+function loadQueuedTrack(track) {
+    clearInterval(updateTimer);
+    resetValues();
+
+    curr_track.src = `/stream/${track.id}`;
+    curr_track.load();
+
+    track_art.style.backgroundImage = `url('/art/${track.id}')`;
+    track_name.textContent = track.title;
+    track_artist.textContent = track.artist;
+    now_player.textContent = "playing from queue";
+
+    updateTimer = setInterval(seekUpdate, 1000);
+
+    curr_track.addEventListener("loadedmetadata", () => {
+        total_duration.textContent = formatTime(curr_track.duration);
+        seek_slider.max = Math.floor(curr_track.duration);
+    });
+
+    curr_track.addEventListener("ended", nextTrack);
+    renderQueue();
+}
 
 
 // Kick things off once the page loads
