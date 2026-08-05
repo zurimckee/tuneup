@@ -150,8 +150,8 @@ async function renderSidebar() {
                 <button class="add-queue-btn" title="add to queue">+</button>
             `;
             li.onclick = () => {
-                track_list = library_tracks;
-                track_index = track.originalIndex;
+                track_list = folderTracks;
+                track_index = folderTracks.findIndex(t => t.id === track.id);
                 loadTrack(track_index);
                 playTrack();
             };
@@ -566,6 +566,9 @@ function renderQueue() {
     if (remainingSlots > 0 && track_list && track_list.length > 1) {
         getUpcomingTracks(remainingSlots).forEach(({ track, index }) => {
             if (!track) return;
+            if (now_player.textContent === "playing from queue" && track.id === curr_track.src.split('/').pop()) {
+                return;
+            }
             const li = document.createElement("li");
             li.className = "queue-item";
             li.innerHTML = `<span class="queue-item-title">${track.title}</span><span class="queue-item-artist">${track.artist}</span>`;
@@ -595,6 +598,13 @@ function loadQueuedTrack(track) {
     clearInterval(updateTimer);
     resetValues();
 
+    track_index = track_list.findIndex(t => t.id === track.id);
+
+    if (track_index === -1) {
+        // Fallback: just use the track object as-is and set a dummy index
+        track_index = 0;
+    }
+
     curr_track.src = `/stream/${track.id}`;
     curr_track.load();
 
@@ -605,12 +615,12 @@ function loadQueuedTrack(track) {
 
     updateTimer = setInterval(seekUpdate, 1000);
 
-    curr_track.addEventListener("loadedmetadata", () => {
+    curr_track.loadedmetadata = () => {
         total_duration.textContent = formatTime(curr_track.duration);
         seek_slider.max = Math.floor(curr_track.duration);
-    });
+    };
 
-    curr_track.addEventListener("ended", nextTrack);
+    curr_track.onended = nextTrack;
     renderQueue();
 }
 
