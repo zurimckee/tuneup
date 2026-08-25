@@ -186,7 +186,8 @@ body {
 
 .search-container {
   padding: 16px;
-  text-align: center;
+  justify-content: center;
+  display: flex;
 }
 
 .search-input {
@@ -197,6 +198,7 @@ body {
   border: 1px solid #778DA9;
   font-size: 14px;
   outline: none;
+  display:flex;
 }
 
 .search-input:focus {
@@ -211,9 +213,13 @@ body {
   background:none;
   border: none;
   color: #778DA9;
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
-  margin-bottom: 12px;
+  margin-bottom: 1px;
+  margin-top: auto;
+  padding: 12px;
+  order: -1;
+
 }
 
 .save-offline {

@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v3"; // bump this any time script.js, styles.css, or index.html changes
+const CACHE_VERSION = "v4"; // bump this any time script.js, styles.css, or index.html changes
 const SHELL_CACHE = `tuneup-shell-${CACHE_VERSION}`;
 const ART_CACHE = `tuneup-art-${CACHE_VERSION}`;
 const AUDIO_CACHE = `tuneup-audio-${CACHE_VERSION}`;
