@@ -176,6 +176,28 @@ body {
   color: #777;
 }
 
+.favorite-track {
+  padding: 25px;
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity .2s, color .2s;
+}
+
+.favorite-track:hover { opacity: 0.8; }
+
+.favorite-track.active {
+  opacity: 1.0;
+  color: #e0245e;
+}
+
+.sidebar-empty {
+  padding: 10px 16px 10px 28px;
+  color: #888;
+  font-size: 0.8rem;
+  font-style: italic;
+  list-style: none;
+}
+
 .main-content {
   height:100vh;
   overflow-y: auto;
@@ -432,15 +454,7 @@ i.fa-step-backward {
   transform: translateX(-50%) translateY(0);
 }
 
-.no-downloads {
-  cursor: default;
-  color: #E0E1DD;
-  font-style: italic;
-}
 
-.no-downloads:hover {
-  background-color: transparent;
-}
 
 .queue-container {
   width: 75%;
