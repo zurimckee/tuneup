@@ -163,6 +163,18 @@ body {
   padding-left: 20px; 
 }
 
+.sidebar-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+}
+
+.sidebar-item .add-queue-btn {
+  margin-left: 12px;
+}
+
 .sidebar-item:hover {
   background-color: #f5f5f0;
 }
@@ -218,7 +230,7 @@ body {
   padding: 10px 16px;
   border-radius: 20px;
   border: 1px solid #778DA9;
-  font-size: 14px;
+  font-size: 16px;
   outline: none;
   display:flex;
 }
@@ -255,11 +267,18 @@ body {
 }
 
 
-.shuffle-track {
+.shuffle-track,
+.favorite-track {
+  padding: 25px;
+  width: 1.25em;
+  text-align: center;
+  flex-shrink: 0;
   opacity: 0.5;
   cursor: pointer;
   transition: opacity .2s;
 }
+
+
 
 .shuffle-track:hover {
   opacity: 0.8;

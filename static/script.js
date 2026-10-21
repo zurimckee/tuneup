@@ -34,10 +34,25 @@ let updateTimer;
 let current_track = null;
 
 let curr_track = document.createElement('audio')
+curr_track.preload = "auto";
+let want_playing = false;
 curr_track.addEventListener("ended", nextTrack);
 curr_track.addEventListener("loadedmetadata", () => {
     total_duration.textContent = formatTime(curr_track.duration);
     seek_slider.max = Math.floor(curr_track.duration);
+});
+
+curr_track.addEventListener("playing", () => setPlayingState(true));
+curr_track.addEventListener("pause", () => {
+    // a track finishing fires "pause" right before "ended"; don't flash paused between songs
+    if (curr_track.ended) return;
+    setPlayingState(false);
+});
+
+curr_track.addEventListener("canplay", () => {
+    if (want_playing && curr_track.paused) {
+        curr_track.play().catch(() => {});
+    }
 });
 
 const openFolders = new Set();  // remembers which sidebar folders are open
@@ -95,7 +110,7 @@ function renderSidebar() {
     });
 
     Object.keys(folders).sort().forEach(name => {
-        addSidebarFolder(name, folders[name], library_tracks);
+        addSidebarFolder(name, folders[name], folders[name]);
     });
 }
 
@@ -123,8 +138,16 @@ function addSidebarFolder(folderName, folderTracks, queue) {
         const li = document.createElement("li");
         li.className = "sidebar-item";
         li.innerHTML = `<span class="sidebar-title">${track.title}</span><span class="sidebar-artist">${track.artist}</span>`;
+        li.innerHTML = `
+            <span class="sidebar-info">
+                <span class="sidebar-title">${track.title}</span>
+                <span class="sidebar-artist">${track.artist}</span>
+            </span>
+            <button class="add-queue-btn" title="add to queue">+</button>
+        `;
         li.onclick = () => playFromList(queue, queue.indexOf(track));
-        inner.appendChild(li);
+        li.querySelector(".add-queue-btn").onclick = (e) => addToQueue(track, e);
+         inner.appendChild(li);
     });
 
     group.appendChild(inner);
@@ -254,8 +277,9 @@ function loadTrack(index) {
 
     current_track = track;
 
+    //curr_track.src = `/stream/${track.id}`;
+    //curr_track.load();
     curr_track.src = `/stream/${track.id}`;
-    curr_track.load();
 
     track_art.style.backgroundImage = `url('/art/${track.id}')`;
     track_name.textContent = track.title;
@@ -269,6 +293,13 @@ function loadTrack(index) {
     renderQueue();
 }
 
+function setPlayingState(playing) {
+   isPlaying = playing;
+   playpause_btn.innerHTML = playing
+        ? '<i class="fa fa-pause-circle fa-5x"></i>'
+        : '<i class="fa fa-play-circle fa-5x"></i>';
+    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = playing ? "playing" : "paused";
+}
 
 function toggleShuffle() {
     isShuffled = !isShuffled;
@@ -347,18 +378,23 @@ function playpauseTrack() {
     isPlaying ? pauseTrack() : playTrack();
 }
 
+
 function playTrack() {
-    curr_track.play();
-    isPlaying = true;
-    playpause_btn.innerHTML = '<i class="fa fa-pause-circle fa-5x"></i>';
-    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "playing";
-}
+   want_playing = true;
+    const attempt = curr_track.play();
+    if (attempt !== undefined) {
+        attempt.catch(err => {
+            // AbortError: a newer load/play call replaced this one, and that call decides
+            if (err.name === "AbortError") return;
+            console.warn("play() was blocked:", err.name, err.message);
+            setPlayingState(false);
+        });
+    }
+ }
 
 function pauseTrack() {
+    want_playing = false;
     curr_track.pause();
-    isPlaying = false;
-    playpause_btn.innerHTML = '<i class="fa fa-play-circle fa-5x"></i>';
-    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
 }
 
 function seekTo() {
