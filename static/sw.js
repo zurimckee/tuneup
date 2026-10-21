@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v10"; // bump this any time script.js, styles.css, or index.html changes
+const CACHE_VERSION = "v11"; // bump this any time script.js, styles.css, or index.html changes
 const SHELL_CACHE = `tuneup-shell-${CACHE_VERSION}`;
 const ART_CACHE = `tuneup-art-${CACHE_VERSION}`;
 const AUDIO_CACHE = `tuneup-audio-${CACHE_VERSION}`;
@@ -124,30 +124,3 @@ async function handleStreamRequest(request) {
     });
 }
 
-// Listen for messages from the page to explicitly cache a track
-self.addEventListener("message", (event) => {
-    if (event.data?.type === "CACHE_TRACK") {
-        const trackId = event.data.trackId;
-        event.waitUntil(cacheTrackForOffline(trackId));
-    }
-});
-
-async function cacheTrackForOffline(trackId) {
-    const url = `/stream/${trackId}`;
-    const cache = await caches.open(AUDIO_CACHE);
-    const res = await fetch(url); // full request, no Range header
-    if (res.ok) {
-        await cache.put(url, res.clone());
-    }
-}
-
-self.addEventListener("message", (event) => {
-    if (event.data?.type === "CACHE_TRACK") {
-        const trackId = event.data.trackId;
-        event.waitUntil(
-            cacheTrackForOffline(trackId).then(() => {
-                event.source.postMessage({ type: "TRACK_CACHED", trackId });
-            })
-        );
-    }
-});

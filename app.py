@@ -26,7 +26,7 @@ def library():
 
     cursor = db_conn.execute(
         "SELECT id, r2_key, title, artist, album, duration FROM tracks "
-        "ORDER BY artist, album, track_number LIMIT ? OFFSET ?",
+        "ORDER BY artist, album, track_number, id LIMIT ? OFFSET ?",
         (limit, offset)
     )
     tracks = [
