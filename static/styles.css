@@ -589,3 +589,13 @@ i.fa-step-backward {
 .queue-remove-btn:hover {
   color: #c0392b;
 }
+
+@media (max-width: 480px) {
+  .playpause-track,
+  .prev-track,
+  .next-track,
+  .shuffle-track,
+  .favorite-track {
+    padding: 12px;
+  }
+}
