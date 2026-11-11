@@ -28,6 +28,12 @@
     </button>
     <div class="sidebar">
         <div class="sidebar-header">catalog</div>
+        <select class="sidebar-groupby" onchange="setGroupBy(this.value)">
+            <option value="folder">group by folder</option>
+            <option value="genre">group by genre</option>
+            <option value="artist">group by artist</option>
+        </select>
+        <hr>
         <ul class="sidebar-list"></ul>
     </div>
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>

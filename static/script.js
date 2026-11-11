@@ -33,6 +33,11 @@ let isPlaying = false;
 let updateTimer;
 let current_track = null;
 
+const COMMA_ARTISTS = [
+    "Tyler, The Creator",
+    "Earth, Wind & Fire",
+]
+
 let curr_track = document.createElement('audio')
 curr_track.preload = "auto";
 let want_playing = false;
@@ -95,8 +100,41 @@ function toggleSidebar() {
     document.querySelector(".sidebar-toggle").classList.toggle("open");
 }
 
+function primaryArtist(artist) {
+    let name = (artist || "").split("/")[0].split(/\s+(feat\.?|ft\.?)\s+/i)[0].trim();
+    const keep = COMMA_ARTISTS.find(a => name.toLowerCase().startsWith(a.toLowerCase()));
+    if (keep) return keep;
+    return name.split(",")[0].trim();
+}
+
+// ---- group-by switch ----
+let groupBy = "folder";
+try { groupBy = localStorage.getItem("groupBy") || "folder"; } catch (e) {}
+
+function setGroupBy(value) {
+    groupBy = value;
+    try { localStorage.setItem("groupBy", value); } catch (e) {}
+    renderSidebar();
+}
+
+function getGroupName(track) {
+    if (groupBy === "genre") {
+        return track.genre || "Unknown Genre";
+    }
+    if (groupBy === "artist") {
+        // "Bruno Mars/Anderson .Paak" -> "Bruno Mars"
+        return primaryArtist(track.artist) || "Unknown Artist";
+    }
+    // folder: "lab-jamz/Song.mp3" -> "lab jamz"
+    const parts = (track.r2_key || "").split("/");
+    return parts.length > 1 ? parts[0].replace(/[-_]+/g, " ") : "unsorted";
+}
+
 function renderSidebar() {
     sidebar_list.innerHTML = "";
+
+    const picker = document.querySelector(".sidebar-groupby");
+    if (picker) picker.value = groupBy;
 
     // Favorites folder always goes first
     const favTracks = library_tracks.filter(t => favorites.has(t.r2_key));
@@ -105,18 +143,19 @@ function renderSidebar() {
     const recent = [...library_tracks]
         .sort((a, b) => (b.date_added || "").localeCompare(a.date_added || ""))
         .slice(0, 75);
-    addSidebarFolder("recently added", recent, recent);    
+    addSidebarFolder("recently added", recent, recent);
 
     const folders = {};
     library_tracks.forEach(track => {
-        const parts = track.r2_key.split("/");
-        const folderName = parts.length > 1 ? parts[0] : "uncategorized";
-        (folders[folderName] ||= []).push(track);
+        (folders[getGroupName(track)] ||= []).push(track);
     });
 
-    Object.keys(folders).sort().forEach(name => {
-        addSidebarFolder(name, folders[name], folders[name]);
-    });
+    // Alphabetical, case-insensitive, with "Unknown ..." / "unsorted" at the bottom
+    const isLeftover = n => /^(unknown|unsorted)/i.test(n);
+    Object.keys(folders)
+        .sort((a, b) => (isLeftover(a) - isLeftover(b)) ||
+                        a.localeCompare(b, undefined, { sensitivity: "base" }))
+        .forEach(name => addSidebarFolder(name, folders[name], folders[name]));
 }
 
 function addSidebarFolder(folderName, folderTracks, queue) {

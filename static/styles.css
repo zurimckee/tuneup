@@ -7,6 +7,20 @@ body {
 
 }
 
+.sidebar-groupby {
+    margin: 0 16px 12px;
+    padding: 6px 10px;
+    font: inherit;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: black;
+    cursor: pointer;
+    border-bottom: 1px solid #778DA9;
+
+}
+
 .sidebar-toggle {
   position: fixed;
   top: 12px;
@@ -86,7 +100,6 @@ body {
   font-size: 1.2rem;
   font-weight: bold;
   padding: 16px;
-  border-bottom: 1px solid #778DA9;
 }
 
 .sidebar-album-header {

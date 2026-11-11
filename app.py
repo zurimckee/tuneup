@@ -25,13 +25,13 @@ def library():
         return jsonify({"results": results, "query": query})
 
     cursor = db_conn.execute(
-        "SELECT id, r2_key, title, artist, album, duration, date_added FROM tracks "
+        "SELECT id, r2_key, title, artist, album, duration, date_added, genre FROM tracks "
         "ORDER BY artist, album, track_number, id LIMIT ? OFFSET ?",
         (limit, offset)
     )
     tracks = [
         {"id": r[0], "r2_key": r[1], "title": r[2], "artist": r[3],
-         "album": r[4], "duration": r[5], "date_added": r[6]}
+         "album": r[4], "duration": r[5], "date_added": r[6], "genre": r[7]}
         for r in cursor.fetchall()
     ]
     return jsonify({"results": tracks, "query": None})

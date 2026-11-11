@@ -41,7 +41,9 @@ def load_index():
         print("No index found in R2 — building one now.")
         rebuild_index()
 
+
     return sqlite3.connect(LOCAL_DB_PATH, check_same_thread=False)
+
 
 
 def rebuild_index():
@@ -63,10 +65,12 @@ def rebuild_index():
             title TEXT,
             artist TEXT,
             album TEXT,
+            genre TEXT,
             track_number INTEGER,
             duration REAL,
             filesize INTEGER,
             date_added TEXT
+
         )
     """)
 
@@ -115,6 +119,11 @@ def rebuild_index():
             _index_track(conn, key, obj["Size"], obj['LastModified'])
 
     conn.commit()
+
+    # Most files have no ID3 genre, so fill those in by looking up the artist
+    from genres import assign_genres
+    assign_genres(conn)
+
     conn.close()
 
     s3.upload_file(temp_build_path, R2_BUCKET, INDEX_KEY)
@@ -171,9 +180,11 @@ def _index_track(conn, key, filesize, last_modified):
         artist = str(tags.get("TPE1", "Unknown Artist"))
         album = str(tags.get("TALB", "Unknown Album"))
         track_number = str(tags.get("TRCK", "0")).split("/")[0]
+        tcon = tags.get("TCON")
+        genre = tcon.genres[0].strip() if tcon and tcon.genres else "Unknown Genre"
     except Exception as e:
         print(f"Failed to read tags for {key}: {type(e).__name__}: {e}")
-        title, artist, album, track_number = key, "Unknown", "Unknown", 0
+        title, artist, album, track_number, genre = key, "Unknown", "Unknown", 0, "Unknown Genre"
 
     # Estimate duration from filesize and known constant bitrate.
     # duration (seconds) = (filesize in bits) / (bitrate in bits per second)
@@ -181,9 +192,9 @@ def _index_track(conn, key, filesize, last_modified):
 
     conn.execute(
         """INSERT OR REPLACE INTO tracks
-           (r2_key, title, artist, album, track_number, duration, filesize, date_added)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-        (key, title, artist, album, int(track_number or 0), duration, filesize,
+           (r2_key, title, artist, album, genre, track_number, duration, filesize, date_added)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (key, title, artist, album, genre,int(track_number or 0), duration, filesize,
          last_modified.isoformat())
     )
 
