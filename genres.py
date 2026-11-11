@@ -287,6 +287,10 @@ if __name__ == "__main__":
         conn.backup(mem)
         conn.close()
         conn = mem
+    if "--reassign" in sys.argv:
+        # Re-sort every track using the current GENRE_BUCKETS (uses cached tags, no new lookups)
+        conn.execute("UPDATE tracks SET genre = ?", (UNKNOWN,))
+
     assign_genres(conn, limit=limit, upload_cache=not dry_run)
 
     for genre, count in conn.execute(
