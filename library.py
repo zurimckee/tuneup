@@ -112,7 +112,7 @@ def rebuild_index():
             key = obj["Key"]
             if not key.lower().endswith(".mp3"):
                 continue
-            _index_track(conn, key, obj["Size"])
+            _index_track(conn, key, obj["Size"], obj['LastModified'])
 
     conn.commit()
     conn.close()
@@ -146,7 +146,7 @@ def _get_id3_tag_size(key):
     )
     return tag_size + 10  # +10 for the header itself
 
-def _index_track(conn, key, filesize):
+def _index_track(conn, key, filesize, last_modified):
     """Fetches just the first chunk of the file to read ID3 tags,
     instead of downloading the entire track. """
     tmp_path = os.path.join(tempfile.gettempdir(), "_tag_scan.mp3")
@@ -184,7 +184,7 @@ def _index_track(conn, key, filesize):
            (r2_key, title, artist, album, track_number, duration, filesize, date_added)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
         (key, title, artist, album, int(track_number or 0), duration, filesize,
-         datetime.now(timezone.utc).isoformat())
+         last_modified.isoformat())
     )
 
     os.remove(tmp_path)

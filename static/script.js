@@ -102,6 +102,11 @@ function renderSidebar() {
     const favTracks = library_tracks.filter(t => favorites.has(t.r2_key));
     addSidebarFolder("favorites", favTracks, favTracks);
 
+    const recent = [...library_tracks]
+        .sort((a, b) => (b.date_added || "").localeCompare(a.date_added || ""))
+        .slice(0, 75);
+    addSidebarFolder("recently added", recent, recent);    
+
     const folders = {};
     library_tracks.forEach(track => {
         const parts = track.r2_key.split("/");
@@ -426,6 +431,7 @@ function updateMediaSession(track) {
             { src: `/art/${track.id}`, sizes: '512x512', type: 'image/jpeg' }
         ]
     });
+    setupMediaSessionHandlers();
 }
 
 function setupMediaSessionHandlers(){
@@ -440,6 +446,8 @@ function setupMediaSessionHandlers(){
             savePlayerState();
         }
     });
+    navigator.mediaSession.setActionHandler('seekbackward', null);
+    navigator.mediaSession.setActionHandler('seekforward', null);
 }
 
 
